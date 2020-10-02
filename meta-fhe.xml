@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+ <remote name="github" fetch="https://github.com/" />
+ <project name="irskid5/meta-fhe" remote="github" path="meta-fhe" >
+ <copyfile src=".project-manifest.xml" dest=".repo/local_manifests/meta-fhe.xml" />
+ </project>
+</manifest>
