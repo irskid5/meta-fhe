@@ -13,19 +13,29 @@ HOMEPAGE = "https://www.microsoft.com/en-us/research/project/microsoft-seal/"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=b98fddd052bb2f5ddbcdbd417ffb26a8" 
 
-PV = "${SRCPV}"
+#inherit autotools cmake pkgconfig
+inherit cmake
 
 SRC_URI = "git://github.com/microsoft/SEAL.git;protocol=http"
 SRCREV = "${AUTOREV}"
+
+PV = "1.0+git${SRCPV}"
 S = "${WORKDIR}/git"
 
-PACKAGES = "${PN}-dbg ${PN} ${PN}-doc ${PN}-dev ${PN}-staticdev ${PN}-locale"
+DEPENDS = "zlib"
+
+#PACKAGES = "${PN}-dbg ${PN} ${PN}-doc ${PN}-dev ${PN}-staticdev ${PN}-locale"
+
+EXTRA_OECMAKE += "-DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DSEAL_USE_ZLIB=OFF -DSEAL_USE_MSGSL=OFF"
+EXTRA_OECMAKE += "-DCMAKE_CROSSCOMPILING=OFF"
+OECMAKE_BUILDPATH += "${WORKDIR}/build"
+OECMAKE_SOURCEPATH += "${S}"
 
 FILES_${PN} = "\
     ${bindir}/* \
     ${sbindir}/* \
     ${libexecdir}/* \
-    /usr/local/lib/lib*.so.* \
+    /usr/lib/lib*.so.* \
     ${sysconfdir} \
     ${sharedstatedir} \
     ${localstatedir} \
@@ -33,13 +43,13 @@ FILES_${PN} = "\
     /sbin/* \
     /lib/*.so* \
     ${datadir}/${PN} \
-    /usr/local/lib/${PN}/* \
+    /usr/lib/${PN}/* \
     ${datadir}/pixmaps \
     ${datadir}/applications \
     ${datadir}/idl \
     ${datadir}/omf \
     ${datadir}/sounds \
-    /usr/local/lib/bonobo/servers"
+    /usr/lib/bonobo/servers"
 
 FILES_${PN}-dbg = "\
     ${bindir}/.debug \
@@ -49,7 +59,7 @@ FILES_${PN}-dbg = "\
     /bin/.debug \
     /sbin/.debug \
     /lib/.debug \
-    /usr/local/lib/${PN}/.debug"
+    /usr/lib/${PN}/.debug"
 
 FILES_${PN}-doc = "\
     ${docdir} \
@@ -59,29 +69,30 @@ FILES_${PN}-doc = "\
     ${datadir}/gnome/help"
 
 FILES_${PN}-dev = "\
-    /usr/local/include \
+    /usr/include \
     /usr/src \
-    /usr/local/lib/lib*.so \
-    /usr/local/lib/*.la \
-    /usr/local/lib/*.o \
-    /usr/local/lib/pkgconfig \
-    /usr/local/lib/cmake \
+    /usr/lib/lib*.so \
+    /usr/lib/*.la \
+    /usr/lib/*.o \
+    /usr/lib/pkgconfig \
     /lib/*.a \
     /lib/*.o \
     ${datadir}/aclocal"
 
+# /usr/lib/cmake
+
 FILES_${PN}-locale = "${datadir}/locale"
 
 FILES_${PN}-staticdev = "\
-    /usr/local/lib/*.a"
+    /usr/lib/*.a"
 
-inherit cmake autotools pkgconfig
-
-do_compile_prepend() {
-  cmake ../git -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release
+do_configure_prepend() {
+  cd ${S}
+#  cmake --version
+#  g++ --version
+#  ls -a
 }
 
-#do_package_qa_prepend() {
-#  rm ../packages-split/seal-dev/usr/local/lib/libseal.so
-#  ln -s ../packages-split/seal/usr/local/lib/libseal.so.3.5.9 ../packages-split/seal-dev/usr/local/lib/libseal.so
-#}
+do_install_append() {
+  rm -rf ${D}${libdir}/cmake
+}
